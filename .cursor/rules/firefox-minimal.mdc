@@ -1,0 +1,36 @@
+---
+description: Firefox-only extension targeting with minimal background work
+alwaysApply: true
+---
+
+# Firefox only, do as little as possible
+
+This project targets **Firefox only**. Do not add Chrome/Chromium compatibility shims, dual manifests, or workarounds for non-Firefox browsers. Use Firefox WebExtensions APIs and test against Firefox.
+
+## Core principle
+
+The extension should stay idle unless it has real work to do. Prefer early returns, skip API calls, and avoid alarms, listeners, storage writes, and tab queries when the outcome would be a no-op.
+
+## When to do nothing
+
+- **All tabs already unloaded** — skip `tabs.discard()` and avoid rescheduling sweeps unless eligibility changes.
+- **Storage cleared or missing settings** — treat as defaults; do not rebuild, migrate, or write back unless the user changed something.
+- **Auto-unload disabled** — clear the sweep alarm and return; do not query tabs.
+- **No tab will become eligible soon** — do not poll on a fixed interval; schedule the next alarm only when something might change.
+- **Tab cannot be discarded** — skip that tab silently; do not abort the whole sweep.
+- **Active, pinned, audible, or excluded tabs** — leave them alone; do not touch them “just in case.”
+
+## What to avoid
+
+- Polling loops, redundant `tabs.query()` calls, or always-on timers when state is already settled.
+- Writing to `storage.local` on startup or sweeps when values did not change.
+- Extra listeners, migrations, telemetry, or defensive code for hypothetical edge cases.
+- Cross-browser abstractions or feature detection for non-Firefox targets.
+
+## Before adding code, ask
+
+1. Does Firefox already handle this?
+2. Will this run when nothing needs to change?
+3. Can an early return replace new logic?
+
+If the answer to (2) is yes, do not add the code.

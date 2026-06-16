@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Sleepy Tabs</title>
+</head>
+<body class="grid gap-4 bg-body-100 w-85 p-4 dark:bg-body-50">
+	<div class="grid gap-2">
+		<h2 class="text-custom-xl ml-[calc(var(--radius-outer)/2-.125em)]">Global Rules</h2>
+		<div class="menu-list">
+			<label class="menu-row menu-row--setting">
+				Unload tabs:
+				<select class="bg-[color-mix(white_90%,var(--color-body-50))] px-2 py-1 rounded-(--radius-controls) dark:bg-body-200" name="duration">
+					<option value="1">After 1min</option>
+					<option value="5">After 5min</option>
+					<option value="10">After 10min</option>
+					<option value="15">After 15min</option>
+					<option value="30">After 30min</option>
+					<option value="45">After 45min</option>
+					<option value="60">After 60min</option>
+					<option value="90">After 90min</option>
+					<option value="120">After 120min</option>
+					<option value="180">After 180min</option>
+					<option value="240">After 240min</option>
+					<option value="never">Never</option>
+				</select>
+			</label>
+			<label class="switch menu-row menu-row--setting">
+				Unload pinned tabs:
+				<input class="sr-only" type="checkbox" name="skipPinned">
+				<span></span>
+			</label>
+			<label class="switch menu-row menu-row--setting">
+				Unload audio tabs:
+				<input class="sr-only" type="checkbox" name="skipAudible">
+				<span></span>
+			</label>
+		</div>
+	</div>
+
+	<div class="grid gap-2">
+		<h2 class="text-custom-xl ml-[calc(var(--radius-outer)/2-.125em)]">Site Rules</h2>
+		<div id="site-rules-container" class="menu-list"></div>
+		<button name="add" type="button" class="bg-body-50 px-[1.5em] py-[.75em] rounded-(--radius-outer) cursor-pointer hover:bg-primary-500 hover:text-primary-50 not-hover:dark:bg-body-100">
+			Add site rule
+		</button>
+	</div>
+
+	<template>
+		<div
+			id="site-rule-row"
+			class="menu-row menu-row--action menu-row--hoverable"
+		>
+			<a
+				href=""
+				class="text-left"
+			></a>
+			<button
+				type="button"
+				command="toggle-popover"
+				commandfor="site-rule-menu"
+				aria-label="Site rule options"
+			>
+				<img
+					src="../../materialDesignIcons/rounded/more_vert.svg"
+					alt=""
+					width="20"
+					height="20"
+					class="size-5 dark:invert"
+				>
+			</button>
+			<div
+				id="site-rule-menu"
+				popover=""
+				class="
+					[position-area:bottom_right] gap-1 bg-body-50 p-1! rounded-[calc(var(--radius-controls)+.25rem)] -translate-x-4 shadow-md border border-body-200
+					dark:bg-body-100
+					open:grid
+				"
+			>
+				<button
+					type="button"
+					command="--edit"
+					commandfor="site-rule-row"
+					class="
+						text-left text-nowrap px-[1em] py-[.5em] rounded-(--radius-controls) cursor-pointer
+						hover:bg-primary-500 hover:text-primary-50
+					"
+				>
+					Edit
+				</button>
+				<button
+					type="button"
+					command="--move-up"
+					commandfor="site-rule-row"
+					class="
+						text-left text-nowrap px-[1em] py-[.5em] rounded-(--radius-controls) cursor-pointer
+						hover:bg-primary-500 hover:text-primary-50
+					"
+				>
+					Move up
+				</button>
+				<button
+					type="button"
+					command="--move-down"
+					commandfor="site-rule-row"
+					class="
+						text-left text-nowrap px-[1em] py-[.5em] rounded-(--radius-controls) cursor-pointer
+						hover:bg-primary-500 hover:text-primary-50
+					"
+				>
+					Move down
+				</button>
+				<button
+					type="button"
+					command="--delete"
+					commandfor="site-rule-row"
+					class="
+						text-left text-nowrap px-[1em] py-[.5em] rounded-(--radius-controls) cursor-pointer
+						hover:bg-[oklch(.58_.2_30)] hover:text-[oklch(.97_.01_30)]
+					"
+				>
+					Delete
+				</button>
+			</div>
+		</div>
+	</template>
+
+	<script type="module" src="./index.ts"></script>
+</body>
+</html>

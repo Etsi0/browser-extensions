@@ -1,0 +1,380 @@
+@import "tailwindcss";
+
+@custom-variant dark {
+	@media (prefers-color-scheme: dark) {
+		&:not(.light *) {
+			@slot;
+		}
+	}
+	&:is(.dark *) {
+		@slot;
+	}
+}
+
+@theme {
+	--color-body-50: oklch(var(--body-color-50));
+	--color-body-100: oklch(var(--body-color-100));
+	--color-body-200: oklch(var(--body-color-200));
+	--color-body-300: oklch(var(--body-color-300));
+	--color-body-400: oklch(var(--body-color-400));
+	--color-body-500: oklch(var(--body-color-500));
+
+	--color-primary-50: oklch(var(--primary-color-50));
+	--color-primary-100: oklch(var(--primary-color-100));
+	--color-primary-200: oklch(var(--primary-color-200));
+	--color-primary-300: oklch(var(--primary-color-300));
+	--color-primary-400: oklch(var(--primary-color-400));
+	--color-primary-500: oklch(var(--primary-color-500));
+	--color-primary-600: oklch(var(--primary-color-600));
+	--color-primary-700: oklch(var(--primary-color-700));
+	--color-primary-800: oklch(var(--primary-color-800));
+	--color-primary-900: oklch(var(--primary-color-900));
+	--color-primary-950: oklch(var(--primary-color-950));
+
+	--color-text-100: oklch(var(--text-color-100));
+	--color-text-200: oklch(var(--text-color-200));
+	--color-text-300: oklch(var(--text-color-300));
+	--color-text-400: oklch(var(--text-color-400));
+	--color-text-500: oklch(var(--text-color-500));
+	--color-text-600: oklch(var(--text-color-600));
+	--color-text-700: oklch(var(--text-color-700));
+	--color-text-800: oklch(var(--text-color-800));
+	--color-text-900: oklch(var(--text-color-900));
+
+	--text-custom-md: var(--font-size-1);
+	--text-custom-lg: var(--font-size-2);
+	--text-custom-xl: var(--font-size-3);
+	--text-custom-2xl: var(--font-size-4);
+	--text-custom-3xl: var(--font-size-5);
+	--text-custom-4xl: var(--font-size-6);
+	--text-custom-5xl: var(--font-size-7);
+}
+
+@layer base {
+	:root {
+		--isDarkMode: 0;
+		--hue-color: 277deg;
+		--neutral-chroma: 0.01;
+		color-scheme: light;
+		interpolate-size: allow-keywords;
+
+		--switch-padding: round(.1875rem, 2px);
+
+		--radius-controls: .25rem;
+		--radius-outer: calc(var(--radius-controls) + 1rem);
+
+		/*==================================================
+			Font
+			startValue * (end ^ (index / (totalAmount - 1)))
+			https://spencermortensen.com/articles/typographic-scale/
+		==================================================*/
+		--font-size-1: 1.0000000000rem;
+		--font-size-2: 1.2009369552rem;
+		--font-size-3: 1.4422495703rem;
+		--font-size-4: 1.7320508076rem;
+		--font-size-5: 2.0800838231rem;
+		--font-size-6: 2.4980495330rem;
+		--font-size-7: 3.0000000000rem;
+
+		/*==================================================
+			Body colors
+		==================================================*/
+		--body-light: 0.97;
+		--body-dark: 0.2;
+		--body-step: calc(0.05 * (-1 + 2 * var(--isDarkMode)));
+		--body-base: calc(var(--body-light) - (var(--body-light) - var(--body-dark)) * var(--isDarkMode));
+
+		--body-lightness-50: calc(var(--body-base) + (var(--body-step) * 0));
+		--body-color-50 : var(--body-lightness-50) var(--neutral-chroma) var(--hue-color);
+
+		--body-lightness-100: calc(var(--body-base) + (var(--body-step) * 1));
+		--body-color-100: var(--body-lightness-100) var(--neutral-chroma) var(--hue-color);
+
+		--body-lightness-200: calc(var(--body-base) + (var(--body-step) * 2));
+		--body-color-200: var(--body-lightness-200) var(--neutral-chroma) var(--hue-color);
+
+		--body-lightness-300: calc(var(--body-base) + (var(--body-step) * 3));
+		--body-color-300: var(--body-lightness-300) var(--neutral-chroma) var(--hue-color);
+
+		--body-lightness-400: calc(var(--body-base) + (var(--body-step) * 4));
+		--body-color-400: var(--body-lightness-400) var(--neutral-chroma) var(--hue-color);
+
+		--body-lightness-500: calc(var(--body-base) + (var(--body-step) * 5));
+		--body-color-500: var(--body-lightness-500) var(--neutral-chroma) var(--hue-color);
+
+		/*==================================================
+			Primary colors
+			calc lightness: (lightestLightness - darkestLightness) * ((i - totalAmountOfColors) / totalAmountOfColors) + darkestLightness
+			calc chroma: (primaryChroma / primaryLightness) * (primaryLightness - abs(currentLightness - primaryLightness))
+		==================================================*/
+		--primary-lightness-50: calc((var(--body-light) - var(--body-dark)) * (10 / 10) + var(--body-dark));
+		--primary-chroma-50: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-50) - var(--primary-lightness-500))));
+		--primary-color-50: var(--primary-lightness-50) var(--primary-chroma-50) var(--hue-color);
+
+		--primary-lightness-100: calc((var(--body-light) - var(--body-dark)) * (9 / 10) + var(--body-dark));
+		--primary-chroma-100: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-100) - var(--primary-lightness-500))));
+		--primary-color-100: var(--primary-lightness-100) var(--primary-chroma-100) var(--hue-color);
+
+		--primary-lightness-200: calc((var(--body-light) - var(--body-dark)) * (8 / 10) + var(--body-dark));
+		--primary-chroma-200: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-200) - var(--primary-lightness-500))));
+		--primary-color-200: var(--primary-lightness-200) var(--primary-chroma-200) var(--hue-color);
+
+		--primary-lightness-300: calc((var(--body-light) - var(--body-dark)) * (7 / 10) + var(--body-dark));
+		--primary-chroma-300: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-300) - var(--primary-lightness-500))));
+		--primary-color-300: var(--primary-lightness-300) var(--primary-chroma-300) var(--hue-color);
+
+		--primary-lightness-400: calc((var(--body-light) - var(--body-dark)) * (6 / 10) + var(--body-dark));
+		--primary-chroma-400: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-400) - var(--primary-lightness-500))));
+		--primary-color-400: var(--primary-lightness-400) var(--primary-chroma-400) var(--hue-color);
+
+		--primary-lightness-500: calc((var(--body-light) - var(--body-dark)) * (5 / 10) + var(--body-dark));
+		--primary-chroma-500: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-500) - var(--primary-lightness-500))));
+		--primary-color-500: var(--primary-lightness-500) var(--primary-chroma-500) var(--hue-color);
+
+		--primary-lightness-600: calc((var(--body-light) - var(--body-dark)) * (4 / 10) + var(--body-dark));
+		--primary-chroma-600: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-600) - var(--primary-lightness-500))));
+		--primary-color-600: var(--primary-lightness-600) var(--primary-chroma-600) var(--hue-color);
+
+		--primary-lightness-700: calc((var(--body-light) - var(--body-dark)) * (3 / 10) + var(--body-dark));
+		--primary-chroma-700: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-700) - var(--primary-lightness-500))));
+		--primary-color-700: var(--primary-lightness-700) var(--primary-chroma-700) var(--hue-color);
+
+		--primary-lightness-800: calc((var(--body-light) - var(--body-dark)) * (2 / 10) + var(--body-dark));
+		--primary-chroma-800: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-800) - var(--primary-lightness-500))));
+		--primary-color-800: var(--primary-lightness-800) var(--primary-chroma-800) var(--hue-color);
+
+		--primary-lightness-900: calc((var(--body-light) - var(--body-dark)) * (1 / 10) + var(--body-dark));
+		--primary-chroma-900: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-900) - var(--primary-lightness-500))));
+		--primary-color-900: var(--primary-lightness-900) var(--primary-chroma-900) var(--hue-color);
+
+		--primary-lightness-950: calc((var(--body-light) - var(--body-dark)) * (0 / 10) + var(--body-dark));
+		--primary-chroma-950: calc((0.2 / var(--primary-lightness-500)) * (var(--primary-lightness-500) - abs(var(--primary-lightness-950) - var(--primary-lightness-500))));
+		--primary-color-950: var(--primary-lightness-950) var(--primary-chroma-950) var(--hue-color);
+
+
+		/*==================================================
+			Text colors
+		==================================================*/
+		--text-color-100: abs(0.90 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-200: abs(0.80 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-300: abs(0.70 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-400: abs(0.60 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-500: abs(0.50 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-600: abs(0.40 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-700: abs(0.30 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-800: abs(0.20 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+		--text-color-900: abs(0.10 - 1 * var(--isDarkMode)) var(--neutral-chroma) var(--hue-color);
+	}
+
+	@media (prefers-color-scheme: dark) {
+		&:not(.light) {
+			--isDarkMode: 1;
+			color-scheme: dark;
+		}
+	}
+	&:is(.dark) {
+		--isDarkMode: 1;
+		color-scheme: dark;
+	}
+
+	*,
+	::before,
+	::after {
+		border-color: var(--color-body-200);
+		outline: solid 2px transparent;
+		outline-offset: 2pt;
+		transition-property: none;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 150ms;
+	}
+
+	*:focus-visible {
+		outline: solid 2px var(--color-primary-500);
+	}
+
+	html {
+		font-size: calc(14 / 16 * 100%);
+	}
+
+	body {
+		color: var(--color-text-700);
+		font-size: var(--font-size-1);
+		line-height: 1.33;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		color: var(--color-text-800);
+		font-weight: 600;
+		text-wrap: balance;
+		line-height: 1;
+	}
+
+	h1 {
+		color: var(--color-text-900);
+		font-size: var(--font-size-7);
+	}
+
+	h2 {
+		font-size: var(--font-size-6);
+	}
+
+	h3 {
+		font-size: var(--font-size-5);
+	}
+
+	h4 {
+		font-size: var(--font-size-4);
+	}
+
+	h5 {
+		font-size: var(--font-size-3);
+	}
+
+	h6 {
+		font-size: var(--font-size-2);
+	}
+
+	p {
+		max-width: 65ch;
+		text-wrap: pretty;
+	}
+
+	.padding {
+		padding-block: calc(0.75em * max(var(--size, 1), 0.33));
+		padding-inline: calc(1.5em * max(var(--size, 1), 0.33));
+	}
+
+	.switch {
+		--height: calc(1lh + .25rem);
+		--aspect-ratio: 2;
+		--switch-transition-duration: 0ms;
+		cursor: pointer;
+
+		&:where(:focus-within, :hover) {
+			--switch-transition-duration: calc(150ms * sqrt(var(--aspect-ratio) - 1));
+		}
+
+		& span,
+		& span::before {
+			border-radius: calc(infinity * 1px);
+			transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+			transition-duration: var(--switch-transition-duration);
+		}
+
+		& span {
+			display: inline-flex;
+			align-items: center;
+			background: light-dark(color-mix(white 90%, var(--color-body-50)), var(--color-body-200));
+			height: var(--height);
+			aspect-ratio: var(--aspect-ratio);
+			padding: var(--switch-padding);
+			vertical-align: middle;
+			transition-property: background;
+		}
+
+		& span::before {
+			content: '';
+			background: light-dark(var(--color-text-100), var(--color-text-700));
+			height: 100%;
+			aspect-ratio: 1;
+			transition-property: background, border-radius, translate;
+		}
+
+		&.switch--last span {
+			border-end-end-radius: var(--radius-inner);
+		}
+
+		/*==================================================
+			If disabled
+		==================================================*/
+		&:has(input:disabled) {
+			cursor: not-allowed;
+		}
+
+		/*==================================================
+			If hovering
+		==================================================*/
+		&:has(input:enabled) span:hover {
+			opacity: 0.87;
+		}
+
+		/*==================================================
+			If focus
+		==================================================*/
+		&:has(input:enabled):has(input:focus-visible) span {
+			outline-color: var(--color-primary-500);
+		}
+
+		/*==================================================
+			If checked
+		==================================================*/
+		&.switch--last:has(input:checked) span::before {
+			border-end-end-radius: calc(var(--radius-inner) - var(--switch-padding));
+		}
+
+		&:has(input:checked) span {
+			background: var(--color-primary-500);
+		}
+
+		&:has(input:checked) span::before {
+			background: var(--color-primary-50);
+			translate: calc(var(--height) * (var(--aspect-ratio) - 1));
+		}
+	}
+}
+
+@layer components {
+	.menu-list {
+		@apply grid gap-0.5;
+	}
+
+	.menu-row {
+		@apply bg-body-50 w-full rounded-(--radius-controls) first:rounded-t-(--radius-outer) last:rounded-b-(--radius-outer);
+	}
+
+	.menu-row:not(.menu-row--hoverable) {
+		@apply dark:bg-body-100;
+	}
+
+	.menu-row.menu-row--hoverable {
+		@apply hover:bg-body-200 hover:text-text-900 hover:**:text-text-900 not-hover:dark:bg-body-100;
+	}
+
+	.menu-row--setting {
+		@apply flex justify-between items-center gap-2 px-(--radius-outer) py-[.75em];
+	}
+
+	.menu-row--action {
+		@apply grid grid-cols-[minmax(0,1fr)_auto];
+
+		& > a,
+		& > button {
+			@apply px-(--radius-outer) py-[.75em] rounded-(--radius-controls) cursor-pointer;
+		}
+
+		& > a {
+			@apply grid gap-y-1 min-w-0;
+
+			& > span {
+				@apply font-mono truncate;
+			}
+
+			& > p {
+				@apply text-[.75em] text-text-600;
+			}
+		}
+
+		& > button {
+			@apply shrink-0;
+		}
+
+		&:not(:hover) > button {
+			@apply opacity-50;
+		}
+	}
+}

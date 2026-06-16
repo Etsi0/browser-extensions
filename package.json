@@ -1,0 +1,9 @@
+{
+	"name": "browser-extensions",
+	"private": true,
+	"scripts": {
+		"build": "pnpm -r run build",
+		"dev:forgetme": "pnpm --filter forgetme dev",
+		"dev:sleepy-tabs": "pnpm --filter sleepy-tabs dev"
+	}
+}

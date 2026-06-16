@@ -1,0 +1,4 @@
+packages:
+  - 'ForgetMe'
+  - 'Sleepy-tabs'
+  - 'packages/*'
