@@ -1,0 +1,4 @@
+@import "extension-shared/input.css";
+
+@source "../index.html";
+@source "./**/*.{ts,tsx}";

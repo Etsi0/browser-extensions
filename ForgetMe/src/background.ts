@@ -1,23 +1,24 @@
 import browser from 'webextension-polyfill';
-import { extractHostname, normalizeRule, urlMatchesRule } from 'extension-shared';
-import { tryCatch, isBrowserReady, TFilter, TFilterLegacy, TGlobal, DEFAULT_GLOBAL, STORAGE_KEYS } from './lib/util';
+import { normalizeRule, parseUrl, tryCatch, urlMatchesRule } from 'extension-shared';
+import { isBrowserReady, DEFAULT_GLOBAL, STORAGE_KEYS } from './lib/util';
+import type { Filter, FilterLegacy, Global } from './lib/util';
 
-type TRemovalTypes = {
+type RemovalTypes = {
 	cookies?: boolean;
 	localStorage?: boolean;
 	indexedDB?: boolean;
 	cache?: boolean;
 }
 
-type TPendingRemovalEntry = {
+type PendingRemovalEntry = {
 	history: boolean;
-	browsingData: TRemovalTypes;
+	browsingData: RemovalTypes;
 };
 
 const FLUSH_DEBOUNCE_MS = 1000;
 let flushTimer: ReturnType<typeof setTimeout> | undefined;
 let flushChain: Promise<void> = Promise.resolve();
-let pendingRemovals = new Map<string, TPendingRemovalEntry>();
+let pendingRemovals = new Map<string, PendingRemovalEntry>();
 
 function scheduleFlush(): void {
 	if (flushTimer) {
@@ -49,7 +50,7 @@ function enqueueHistoryDomain(domain: string): void {
 	scheduleFlush();
 }
 
-function enqueueBrowsingData(hostname: string, types: TRemovalTypes): void {
+function enqueueBrowsingData(hostname: string, types: RemovalTypes): void {
 	if (!hostname) {
 		return;
 	}
@@ -68,46 +69,18 @@ function enqueueBrowsingData(hostname: string, types: TRemovalTypes): void {
 	scheduleFlush();
 }
 
-async function removeBrowsingDataForDomain(
-	domain: string,
-	removeCookies: boolean,
-	removeStorage: boolean,
-	removeCache: boolean
-): Promise<void> {
-	const [error] = await tryCatch(async () => {
-		const removalTypes: TRemovalTypes = {};
+async function removeBrowsingData(hostnames: string[], removalTypes: RemovalTypes): Promise<void> {
+	if (hostnames.length === 0 || Object.keys(removalTypes).length === 0) {
+		return;
+	}
 
-		if (removeCookies) {
-			removalTypes.cookies = true;
-		}
-
-		if (removeStorage) {
-			removalTypes.localStorage = true;
-			removalTypes.indexedDB = true;
-		}
-
-		if (removeCache) {
-			removalTypes.cache = true;
-		}
-
-		if (Object.keys(removalTypes).length > 0) {
-			await browser.browsingData.remove({
-				hostnames: [domain],
-			}, removalTypes);
-		}
-	});
-
+	const [error] = await tryCatch(browser.browsingData.remove({ hostnames }, removalTypes));
 	if (error) {
-		console.error(`Error removing browsing data for domain ${domain}:`, error);
+		console.error(`Error removing browsing data for ${hostnames.join(', ')}:`, error);
 	}
 }
 
 async function removeHistoryForDomain(domain: string): Promise<void> {
-	if (!isBrowserReady()) {
-		setTimeout(removeHistoryForDomain, 50, domain);
-		return;
-	}
-
 	const searchResults = await browser.history.search({
 		text: domain,
 		startTime: 0,
@@ -119,8 +92,12 @@ async function removeHistoryForDomain(domain: string): Promise<void> {
 			continue;
 		}
 
-		const itemDomain = extractHostname(item.url);
-		if (!itemDomain || !urlMatchesRule(item.url, domain)) {
+		const url = parseUrl(item.url)
+		if (!url) {
+			continue;
+		}
+
+		if (!urlMatchesRule(url, domain)) {
 			continue;
 		}
 
@@ -139,9 +116,9 @@ async function flushRemovals(): Promise<void> {
 		return;
 	}
 
-	pendingRemovals = new Map<string, TPendingRemovalEntry>();
+	pendingRemovals = new Map<string, PendingRemovalEntry>();
 	try {
-		const grouped = new Map<string, { hostnames: string[]; removalTypes: TRemovalTypes }>();
+		const grouped = new Map<string, { hostnames: string[]; removalTypes: RemovalTypes }>();
 		const historyDomains: string[] = [];
 
 		for (const [domainOrHostname, entry] of pendingEntries) {
@@ -165,7 +142,7 @@ async function flushRemovals(): Promise<void> {
 				continue;
 			}
 
-			const removalTypes: TRemovalTypes = {};
+			const removalTypes: RemovalTypes = {};
 			if (cookiesEnabled) removalTypes.cookies      = true;
 			if (storageEnabled) removalTypes.localStorage = true;
 			if (storageEnabled) removalTypes.indexedDB    = true;
@@ -175,13 +152,7 @@ async function flushRemovals(): Promise<void> {
 		}
 
 		for (const { hostnames, removalTypes } of grouped.values()) {
-			const removeCookies = !!removalTypes.cookies;
-			const removeStorage = !!removalTypes.localStorage || !!removalTypes.indexedDB;
-			const removeCache   = !!removalTypes.cache;
-
-			for (const hostname of hostnames) {
-				await removeBrowsingDataForDomain(hostname, removeCookies, removeStorage, removeCache);
-			}
+			await removeBrowsingData(hostnames, removalTypes);
 		}
 
 		for (const domain of historyDomains) {
@@ -204,19 +175,24 @@ async function main(): Promise<void> {
 
 	browser.tabs.onUpdated.addListener(async (tabId: number, changeInfo: browser.Tabs.OnUpdatedChangeInfoType, tab: browser.Tabs.Tab | undefined) => {
 		if (changeInfo.status === 'complete' && tab?.url) {
-			const response = await browser.storage.local.get(STORAGE_KEYS);
-			const filters: TFilter[] = ((response.filters ?? []) as TFilterLegacy[]).map((filter) => ({
-				...filter,
-				domain: normalizeRule(filter.domain),
-			}));
-			const global: TGlobal = response.global || DEFAULT_GLOBAL;
+			const url = parseUrl(tab.url);
+			if (!url) {
+				return;
+			}
 
-			const tabDomain = extractHostname(tab.url);
+			const tabDomain = url.hostname.toLowerCase();
 			if (!tabDomain) {
 				return;
 			}
 
-			let matchingFilters = filters.filter((filter) => urlMatchesRule(tab.url, filter.domain));
+			const response = await browser.storage.local.get(STORAGE_KEYS);
+			const filters: Filter[] = ((response.filters ?? []) as FilterLegacy[]).map((filter) => ({
+				...filter,
+				domain: normalizeRule(filter.domain),
+			}));
+			const global: Global = response.global || DEFAULT_GLOBAL;
+
+			let matchingFilters = filters.filter((filter) => urlMatchesRule(url, filter.domain));
 			if (matchingFilters.length === 0) {
 				matchingFilters = [{ domain: tabDomain, ...global }];
 			}
@@ -232,7 +208,7 @@ async function main(): Promise<void> {
 				}
 
 				if (filter.removeCookies || filter.removeStorage || filter.removeCache) {
-					const types: TRemovalTypes = {};
+					const types: RemovalTypes = {};
 					if (filter.removeCookies) {
 						types.cookies = true;
 					}

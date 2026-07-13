@@ -1,25 +1,11 @@
 import browser from 'webextension-polyfill';
-import {
-	tryCatch,
-	isBrowserReady,
-	normalizeSettings,
-	shouldUnload,
-	nextSweepDelayMinutes,
-	TSettings,
-	STORAGE_KEY,
-	ALARM_NAME,
-} from './lib/util';
+import { debounce, tryCatch } from 'extension-shared';
+import { loadSettings, onSettingsChanged } from './lib/storage';
+import { nextSweepDelayMinutes, shouldUnload } from './lib/tabs';
+import { ALARM_NAME } from './lib/util';
 
 /*==================================================
-	Settings
-==================================================*/
-async function loadSettings(): Promise<TSettings> {
-	const response = await browser.storage.local.get(STORAGE_KEY);
-	return normalizeSettings(response[STORAGE_KEY]);
-}
-
-/*==================================================
-	Sweep
+	Sweep scheduling
 ==================================================*/
 async function clearSweepAlarm(): Promise<void> {
 	const [clearError] = await tryCatch(browser.alarms.clear(ALARM_NAME));
@@ -54,24 +40,14 @@ async function scheduleSweep(existingTabs?: browser.Tabs.Tab[]): Promise<void> {
 	browser.alarms.create(ALARM_NAME, { delayInMinutes });
 }
 
-let scheduleDebounce: ReturnType<typeof setTimeout> | undefined;
-function requestScheduleSweep(): void {
-	if (scheduleDebounce) {
-		clearTimeout(scheduleDebounce);
-	}
-	scheduleDebounce = setTimeout(() => {
-		scheduleDebounce = undefined;
-		scheduleSweep().catch((error) => console.error('Error scheduling sweep:', error));
-	}, 300);
-}
+const requestScheduleSweep = debounce(() => {
+	scheduleSweep().catch((error) => console.error('Error scheduling sweep:', error));
+}, 300);
 
+/*==================================================
+	Sweep
+==================================================*/
 async function sweep(): Promise<void> {
-	console.log('sweep');
-
-	if (!isBrowserReady()) {
-		return;
-	}
-
 	const settings = await loadSettings();
 	if (!settings.enabled) {
 		await clearSweepAlarm();
@@ -85,33 +61,25 @@ async function sweep(): Promise<void> {
 	}
 
 	const now = Date.now();
-	for (const tab of tabs) {
-		if (!shouldUnload(tab, settings, now)) {
-			continue;
-		}
-
-		const [discardError] = await tryCatch(browser.tabs.discard(tab.id!));
-		if (discardError) {
-			console.debug(`Skipped unloading tab ${tab.id}:`, discardError);
-			continue;
-		}
-
-		console.log(`Unloaded tab ${tab.id}: ${tab.title ?? tab.url ?? ''}`);
-	}
+	const discardable = tabs.filter((tab) => shouldUnload(tab, settings, now));
+	await Promise.all(
+		discardable.map(async (tab) => {
+			const [error] = await tryCatch(browser.tabs.discard(tab.id!));
+			if (error) {
+				console.debug(`Skipped unloading tab ${tab.id}:`, error);
+			}
+			tab.discarded = true; // set to true even if error, we do not want to retry tabs that errors out
+		}),
+	);
 
 	await scheduleSweep(tabs);
 }
 
 /*==================================================
-	Main function
+	Main
 ==================================================*/
-main();
+main().catch(console.error);
 async function main(): Promise<void> {
-	if (!isBrowserReady()) {
-		setTimeout(main, 50);
-		return;
-	}
-
 	browser.alarms.onAlarm.addListener((alarm) => {
 		if (alarm.name === ALARM_NAME) {
 			sweep().catch((error) => console.error('Error during sweep:', error));
@@ -121,24 +89,10 @@ async function main(): Promise<void> {
 	browser.tabs.onActivated.addListener(() => requestScheduleSweep());
 	browser.tabs.onCreated.addListener(() => requestScheduleSweep());
 	browser.tabs.onRemoved.addListener(() => requestScheduleSweep());
-	browser.tabs.onUpdated.addListener((_, changeInfo) => {
-		if (
-			changeInfo.discarded !== undefined ||
-			changeInfo.audible   !== undefined ||
-			changeInfo.pinned    !== undefined ||
-			changeInfo.url       !== undefined
-		) {
-			requestScheduleSweep();
-		}
-	});
+	browser.tabs.onUpdated.addListener(() => {
+		requestScheduleSweep()
+	}, { properties: ['discarded', 'audible', 'pinned', 'url'] });
 
-	browser.storage.onChanged.addListener((changes, areaName) => {
-		if (areaName !== 'local' || !changes[STORAGE_KEY]) {
-			return;
-		}
-
-		requestScheduleSweep();
-	});
-
+	onSettingsChanged(() => requestScheduleSweep());
 	await scheduleSweep();
 }

@@ -4,6 +4,22 @@
 	"version": "0.0.0",
 	"private": true,
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./icons/*": "./src/icons/*",
+		"./input.css": "./src/input.css"
+	},
+	"dependencies": {
+		"clsx": "^2.1.1",
+		"tailwind-merge": "^3.6.0"
+	},
+	"peerDependencies": {
+		"preact": "^10.0.0",
+		"webextension-polyfill": "^0.12.0"
+	},
+	"devDependencies": {
+		"@types/webextension-polyfill": "^0.12.3",
+		"preact": "^10.29.2",
+		"tailwindcss": "^4.1.18",
+		"webextension-polyfill": "^0.12.0"
 	}
 }

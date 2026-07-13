@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@source "./**/*.{ts,tsx}";
+
 @custom-variant dark {
 	@media (prefers-color-scheme: dark) {
 		&:not(.light *) {
@@ -12,6 +14,7 @@
 }
 
 @theme {
+	--color-white: color-mix(white 90%, var(--color-body-50));
 	--color-body-50: oklch(var(--body-color-50));
 	--color-body-100: oklch(var(--body-color-100));
 	--color-body-200: oklch(var(--body-color-200));
@@ -57,8 +60,6 @@
 		--neutral-chroma: 0.01;
 		color-scheme: light;
 		interpolate-size: allow-keywords;
-
-		--switch-padding: round(.1875rem, 2px);
 
 		--radius-controls: .25rem;
 		--radius-outer: calc(var(--radius-controls) + 1rem);
@@ -250,6 +251,7 @@
 	}
 
 	.switch {
+		--padding: round(.1875rem, 1px);
 		--height: calc(1lh + .25rem);
 		--aspect-ratio: 2;
 		--switch-transition-duration: 0ms;
@@ -269,10 +271,10 @@
 		& span {
 			display: inline-flex;
 			align-items: center;
-			background: light-dark(color-mix(white 90%, var(--color-body-50)), var(--color-body-200));
+			background: light-dark(var(--color-white), var(--color-body-200));
 			height: var(--height);
 			aspect-ratio: var(--aspect-ratio);
-			padding: var(--switch-padding);
+			padding: var(--padding);
 			vertical-align: middle;
 			transition-property: background;
 		}
@@ -314,7 +316,7 @@
 			If checked
 		==================================================*/
 		&.switch--last:has(input:checked) span::before {
-			border-end-end-radius: calc(var(--radius-inner) - var(--switch-padding));
+			border-end-end-radius: calc(var(--radius-inner) - var(--padding));
 		}
 
 		&:has(input:checked) span {
@@ -324,57 +326,6 @@
 		&:has(input:checked) span::before {
 			background: var(--color-primary-50);
 			translate: calc(var(--height) * (var(--aspect-ratio) - 1));
-		}
-	}
-}
-
-@layer components {
-	.menu-list {
-		@apply grid gap-0.5;
-	}
-
-	.menu-row {
-		@apply bg-body-50 w-full rounded-(--radius-controls) first:rounded-t-(--radius-outer) last:rounded-b-(--radius-outer);
-	}
-
-	.menu-row:not(.menu-row--hoverable) {
-		@apply dark:bg-body-100;
-	}
-
-	.menu-row.menu-row--hoverable {
-		@apply hover:bg-body-200 hover:text-text-900 hover:**:text-text-900 not-hover:dark:bg-body-100;
-	}
-
-	.menu-row--setting {
-		@apply flex justify-between items-center gap-2 px-(--radius-outer) py-[.75em];
-	}
-
-	.menu-row--action {
-		@apply grid grid-cols-[minmax(0,1fr)_auto];
-
-		& > a,
-		& > button {
-			@apply px-(--radius-outer) py-[.75em] rounded-(--radius-controls) cursor-pointer;
-		}
-
-		& > a {
-			@apply grid gap-y-1 min-w-0;
-
-			& > span {
-				@apply font-mono truncate;
-			}
-
-			& > p {
-				@apply text-[.75em] text-text-600;
-			}
-		}
-
-		& > button {
-			@apply shrink-0;
-		}
-
-		&:not(:hover) > button {
-			@apply opacity-50;
 		}
 	}
 }
