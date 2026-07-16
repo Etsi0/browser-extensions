@@ -66,9 +66,9 @@ export function ListView({ settings, onChange, onAdd, onEdit }: ListViewProps) {
 				</div>
 			</div>
 
-			<div className="grid gap-2">
+			<div className="grow flex flex-col gap-2">
 				<h2 className="text-custom-xl ml-[calc(var(--radius-outer)/2-.125em)]">Site Rules</h2>
-				<div className="grid gap-0.5">
+				<div className="grow flex flex-col gap-0.5">
 					{settings.siteRules.map((rule, index) => (
 						<SiteRuleRow
 							key={rule.pattern}
