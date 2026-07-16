@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useDismissDrag } from '../hooks/useDismissDrag';
 import { cn } from '../lib/cn';
 import { clamp } from '../lib/clamp';
 import { MAX_VISIBLE } from '../lib/util';
@@ -107,6 +108,7 @@ export function NotificationStack({ items, exitingKeys, onDismiss, raiseRef }: N
 						item={item}
 						index={index}
 						total={visibleItems.length}
+						width={size?.w ?? 0}
 						stacked={stackTransforms?.[index]}
 						exiting={exitingKeys.has(item.key)}
 						onDismiss={() => onDismiss(item.key)}
@@ -117,16 +119,45 @@ export function NotificationStack({ items, exitingKeys, onDismiss, raiseRef }: N
 	);
 }
 
-function NotificationCard({ item, index, total, stacked, exiting, onDismiss }: NotificationCardProps) {
+function NotificationCard({ item, index, total, width, stacked, exiting, onDismiss }: NotificationCardProps) {
 	const [entered, setEntered] = useState(false);
+
+	const {
+		drag: dragX,
+		pressed,
+		dismissing,
+		resetGesture,
+		onPointerDown,
+		onPointerMove,
+		onPointerUp,
+		onPointerCancel,
+	} = useDismissDrag({
+		axis: 'x',
+		enabled: index === 0 && !exiting,
+		getExtent: () => width,
+		onCommit: ({ drag, extent, setDrag }) => {
+			setDrag(Math.sign(drag) * extent);
+			if (Math.abs(drag) >= extent) {
+				onDismiss();
+			}
+		},
+	});
+
+	const swipeable = index === 0 && !exiting && (pressed || !dismissing);
 
 	useEffect(() => {
 		const raf = requestAnimationFrame(() => setEntered(true));
 		return () => cancelAnimationFrame(raf);
 	}, []);
 
-	const onTransitionEnd = (): void => {
+	useEffect(() => {
 		if (exiting) {
+			resetGesture();
+		}
+	}, [exiting]);
+
+	const onTransitionEnd = (): void => {
+		if (exiting || dismissing) {
 			onDismiss();
 		}
 	};
@@ -137,6 +168,10 @@ function NotificationCard({ item, index, total, stacked, exiting, onDismiss }: N
 	if (exiting || !entered) {
 		translate = '0 calc(-100% + -1rem)';
 		scale = '0.875';
+	} else if (dragX !== 0) {
+		translate = `${dragX}px 0`;
+		scale = stacked?.scale ?? '1';
+		opacity = 1 - Math.min(Math.abs(dragX) / (width || 1), 1);
 	} else if (stacked) {
 		translate = stacked.translate;
 		scale = stacked.scale;
@@ -148,10 +183,17 @@ function NotificationCard({ item, index, total, stacked, exiting, onDismiss }: N
 		<div
 			role="alert"
 			onTransitionEnd={onTransitionEnd}
+			onPointerDown={swipeable ? onPointerDown : undefined}
+			onPointerMove={swipeable ? onPointerMove : undefined}
+			onPointerUp={swipeable ? onPointerUp : undefined}
+			onPointerCancel={swipeable ? onPointerCancel : undefined}
 			className={cn(
-				'box-content absolute flex items-center gap-2 text-sm inset-x-0 border border-transparent rounded-(--radius-outer) px-(--radius-outer) py-[.75em] shadow-lg transition-[translate,scale,opacity] origin-top duration-300 pointer-events-none',
+				'box-content absolute flex items-center gap-2 text-sm inset-x-0 border border-transparent rounded-(--radius-outer) px-(--radius-outer) py-[.75em] shadow-lg origin-top duration-300 select-none pointer-events-none',
 				'[background:linear-gradient(color-mix(in_oklch,transparent,currentColor_12.5%)_0_100%)_padding-box,linear-gradient(var(--color-body-50)_0_100%)_padding-box,linear-gradient(color-mix(in_oklch,transparent,currentColor_25%)_0_100%)_border-box,linear-gradient(var(--color-body-50)_0_100%)_border-box]',
 				VARIANTS[item.variant].className,
+				swipeable && 'pointer-events-auto',
+				pressed && 'cursor-grabbing',
+				!pressed && 'transition-[translate,scale,opacity]',
 			)}
 			style={{
 				translate,

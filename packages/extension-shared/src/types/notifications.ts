@@ -50,6 +50,7 @@ export type NotificationCardProps = {
 	item: NotificationItem;
 	index: number;
 	total: number;
+	width: number;
 	stacked?: {
 		translate: string;
 		scale: string;

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import { useRaiseNotificationStack } from '../context/notifications';
+import { DRAG_SLOP, useDismissDrag } from '../hooks/useDismissDrag';
 import { cn } from '../lib/cn';
 
 export type BottomSheetProps = {
@@ -10,24 +11,12 @@ export type BottomSheetProps = {
 	children: ComponentChildren;
 };
 
-const CLOSE_FRACTION = (Math.PI * 10) / 100;
-const DRAG_SLOP = 6;
 const CLOSE_MS = 300;
-
-type Gesture =
-	| { phase: 'idle' }
-	| { phase: 'pending'; pointerId: number; startX: number; startY: number }
-	| { phase: 'dragging'; pointerId: number; origin: number };
-
-const IDLE: Gesture = { phase: 'idle' };
 
 export function BottomSheet({ open, onClose, onClosed, children }: BottomSheetProps) {
 	const [entered, setEntered] = useState(false);
-	const [drag, setDrag] = useState(0);
-	const [pressed, setPressed] = useState(false);
 
 	const dialogRef = useRef<HTMLDialogElement>(null);
-	const gesture = useRef<Gesture>(IDLE);
 	const suppressClick = useRef(false);
 	const selfClose = useRef(false);
 	const onClosedRef = useRef(onClosed);
@@ -35,81 +24,41 @@ export function BottomSheet({ open, onClose, onClosed, children }: BottomSheetPr
 
 	const raiseNotifications = useRaiseNotificationStack();
 
+	const {
+		drag,
+		pressed,
+		resetGesture,
+		onPointerDown,
+		onPointerMove,
+		onPointerUp,
+		onPointerCancel,
+	} = useDismissDrag({
+		axis: 'y',
+		getExtent: () => dialogRef.current?.offsetHeight ?? 0,
+		shouldClaim: (_dx, dy) => {
+			if (dy <= DRAG_SLOP) {
+				return false;
+			}
+
+			if ((dialogRef.current?.scrollTop ?? 0) > 0) {
+				return false;
+			}
+
+			return true;
+		},
+		getOrigin: (_startX, startY) => Math.max(dialogRef.current?.offsetTop ?? 0, startY),
+		onSlop: () => {
+			suppressClick.current = true;
+		},
+		onCommit: () => {
+			onClose();
+		},
+	});
+
 	const height = dialogRef.current?.offsetHeight ?? 0;
 	const dragFraction = height ? Math.min(drag / height, 1) : 0;
 	const backdropOpacity = entered ? 1 - dragFraction : 0;
 	const transform = entered ? `translateY(${drag}px)` : 'translateY(100%)';
-
-	const resetGesture = (): void => {
-		gesture.current = IDLE;
-		setDrag(0);
-		setPressed(false);
-	};
-
-	const onPointerDown = (event: PointerEvent): void => {
-		const interactive =
-			event.target instanceof Element &&
-			event.target.closest('input, textarea, select, button, a, [contenteditable="true"]');
-		if (event.button !== 0 || interactive || gesture.current.phase !== 'idle') {
-			return;
-		}
-		gesture.current = {
-			phase: 'pending',
-			pointerId: event.pointerId,
-			startX: event.clientX,
-			startY: event.clientY,
-		};
-		suppressClick.current = false;
-		setPressed(true);
-	};
-
-	const onPointerMove = (event: PointerEvent): void => {
-		const state = gesture.current;
-		if (state.phase === 'idle' || event.pointerId !== state.pointerId) {
-			return;
-		}
-
-		if (state.phase === 'dragging') {
-			setDrag(Math.max(0, event.clientY - state.origin));
-			return;
-		}
-
-		const dx = event.clientX - state.startX;
-		const dy = event.clientY - state.startY;
-		if (Math.abs(dx) > DRAG_SLOP || Math.abs(dy) > DRAG_SLOP) {
-			suppressClick.current = true;
-		}
-		if (dy <= DRAG_SLOP) {
-			return;
-		}
-		if ((dialogRef.current?.scrollTop ?? 0) > 0) {
-			return;
-		}
-
-		const origin = Math.max(dialogRef.current?.offsetTop ?? 0, state.startY);
-		gesture.current = { phase: 'dragging', pointerId: event.pointerId, origin };
-		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-		window.getSelection()?.removeAllRanges();
-		setDrag(Math.max(0, event.clientY - origin));
-	};
-
-	const onPointerEnd = (event: PointerEvent): void => {
-		const state = gesture.current;
-		if (state.phase === 'idle' || event.pointerId !== state.pointerId) {
-			return;
-		}
-		if (state.phase === 'dragging') {
-			const height = dialogRef.current?.offsetHeight ?? 0;
-			const dragged = Math.max(0, event.clientY - state.origin);
-			if (height > 0 && dragged >= height * CLOSE_FRACTION) {
-				gesture.current = IDLE;
-				setPressed(false);
-				onClose();
-				return;
-			}
-		}
-		resetGesture();
-	};
 
 	const onClick = (event: MouseEvent): void => {
 		if (suppressClick.current) {
@@ -205,8 +154,8 @@ export function BottomSheet({ open, onClose, onClosed, children }: BottomSheetPr
 			onClick={onClick}
 			onPointerDown={onPointerDown}
 			onPointerMove={onPointerMove}
-			onPointerUp={onPointerEnd}
-			onPointerCancel={onPointerEnd}
+			onPointerUp={onPointerUp}
+			onPointerCancel={onPointerCancel}
 		>
 			<div className="cursor-grab grid place-items-center py-2">
 				<button
