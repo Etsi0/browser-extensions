@@ -67,6 +67,8 @@ export function NotificationStack({ items, exitingKeys, onDismiss, raiseRef }: N
 	};
 
 	useLayoutEffect(() => {
+		showStackPopover();
+
 		const stack = stackRef.current;
 		if (!stack || items.length === 0) {
 			return;
@@ -79,7 +81,7 @@ export function NotificationStack({ items, exitingKeys, onDismiss, raiseRef }: N
 
 		const w = stack.clientWidth;
 		const h = card.offsetHeight;
-		if (sizeRef.current?.w === w && sizeRef.current?.h === h) {
+		if (w === 0 || (sizeRef.current?.w === w && sizeRef.current?.h === h)) {
 			return;
 		}
 
@@ -88,7 +90,6 @@ export function NotificationStack({ items, exitingKeys, onDismiss, raiseRef }: N
 	}, [items]);
 
 	useEffect(() => {
-		showStackPopover();
 		raiseRef.current = showStackPopover;
 		return () => raiseRef.current = () => {};
 	}, [items]);
