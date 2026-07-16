@@ -1,7 +1,6 @@
 {
 	"name": "sleepy-tabs",
 	"private": true,
-	"version": "1.0.20260713",
 	"type": "module",
 	"scripts": {
 		"dev": "vite build --watch",
