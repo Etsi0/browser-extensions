@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Sleepy Tabs",
-	"version": "1.0.20260716",
+	"version": "1.0.20260717",
 	"description": "Sleepy Tabs automatically unloads inactive tabs after a set amount of time to free up memory",
 	"permissions": [
 		"tabs",
