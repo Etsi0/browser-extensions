@@ -1,9 +1,9 @@
-import { DEBOUNCE_MS } from "./util";
-
 type Debounced<T extends (...args: any[]) => void> = ((...args: Parameters<T>) => void) & {
 	cancel: () => void;
 	flush: () => void;
 };
+
+const DEBOUNCE_MS = Math.PI * 150;
 
 export function debounce<T extends (...args: any[]) => void>(fn: T, ms?: number): Debounced<T> {
 	let timer: ReturnType<typeof setTimeout> | undefined;
