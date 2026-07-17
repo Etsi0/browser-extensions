@@ -2,6 +2,7 @@ import { formatTimeout, MenuSetting, SiteRuleRow, Switch, useNotifications } fro
 import { deleteSiteRule, moveSiteRule, settingsEqual } from '../lib/settings';
 import { DurationSelect } from '../components/durationSelect';
 import type { Settings } from '../types/common';
+import Close from 'extension-shared/icons/close.svg';
 
 type ListViewProps = {
 	settings: Settings;
@@ -46,6 +47,21 @@ export function ListView({ settings, onChange, onAdd, onEdit }: ListViewProps) {
 
 	return (
 		<>
+			<header className='flex items-center justify-between gap-2 px-[calc(var(--radius-outer)/2-.125em)] pb-3 -mb-2 border-b border-body-100'>
+				<div className='flex items-center gap-2'>
+					<img src="/Sleepy-tabs-32.png" alt="" />
+					<h1 className="text-custom-2xl font-sans">Sleepy tabs</h1>
+				</div>
+				<button
+					type="button"
+					className='text-text-700 p-1 rounded-(--radius-controls) hover:text-text-800 hover:bg-body-100 active:text-text-900 active:bg-body-200'
+					onClick={() => window.close()}
+					aria-label="Close"
+				>
+					<Close className="fill-current size-6" />
+				</button>
+			</header>
+
 			<div className="grid gap-2">
 				<h2 className="text-custom-xl ml-[calc(var(--radius-outer)/2-.125em)]">Global Rules</h2>
 				<div className="grid gap-0.5">

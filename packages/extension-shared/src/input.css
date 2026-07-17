@@ -51,6 +51,9 @@
 	--text-custom-3xl: var(--font-size-5);
 	--text-custom-4xl: var(--font-size-6);
 	--text-custom-5xl: var(--font-size-7);
+
+	--font-sans: "Inter", sans-serif;
+	--font-mono: "JetBrains Mono", monospace;
 }
 
 @layer base {
@@ -199,6 +202,7 @@
 
 	body {
 		color: var(--color-text-700);
+		font-weight: var(--font-sans);
 		font-size: var(--font-size-1);
 		line-height: 1.33;
 	}
