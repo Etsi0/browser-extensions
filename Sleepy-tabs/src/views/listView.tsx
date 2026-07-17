@@ -49,7 +49,7 @@ export function ListView({ settings, onChange, onAdd, onEdit }: ListViewProps) {
 		<>
 			<header className='flex items-center justify-between gap-2 px-[calc(var(--radius-outer)/2-.125em)] pb-3 -mb-2 border-b border-body-100'>
 				<div className='flex items-center gap-2'>
-					<img src="/Sleepy-tabs-32.png" alt="" />
+					<img className='size-8' src="/Sleepy-tabs-64.png" alt="" />
 					<h1 className="text-custom-2xl font-sans">Sleepy tabs</h1>
 				</div>
 				<button
