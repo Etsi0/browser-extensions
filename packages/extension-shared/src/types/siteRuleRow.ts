@@ -1,10 +1,10 @@
 type SiteRuleRowRule = {
 	pattern: string;
-	timeoutMinutes: number | null;
 };
 
 export type SiteRuleRowProps = {
 	rule: SiteRuleRowRule;
+	description: string;
 	index: number;
 	total: number;
 	onEdit: () => void;

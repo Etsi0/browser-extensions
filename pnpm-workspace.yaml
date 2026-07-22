@@ -1,5 +1,4 @@
 packages:
-  - 'ForgetMe'
-  - 'Sleepy-tabs'
-  - 'Sleepy-tabs-preact'
+  - 'forget-me'
+  - 'sleepy-tabs'
   - 'packages/*'

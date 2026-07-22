@@ -1,7 +1,6 @@
 import { useRef } from 'preact/hooks';
 import MoreVert from '../icons/more_vert.svg';
 import { cn } from '../lib/cn';
-import { formatTimeout } from '../lib/settings';
 import { SiteRuleRowProps } from '../types/siteRuleRow';
 
 const menuItemClass = `
@@ -9,7 +8,7 @@ const menuItemClass = `
 	hover:bg-primary-500 hover:text-primary-50
 `;
 
-export function SiteRuleRow({ rule, index, total, onEdit, onMove, onDelete }: SiteRuleRowProps) {
+export function SiteRuleRow({ rule, description, index, total, onEdit, onMove, onDelete }: SiteRuleRowProps) {
 	const menuRef = useRef<HTMLDivElement>(null);
 	const menuId = `site-rule-menu-${index}`;
 	const groupInteract = 'group-hover:text-text-900 group-has-[:popover-open]:text-text-900';
@@ -31,8 +30,8 @@ export function SiteRuleRow({ rule, index, total, onEdit, onMove, onDelete }: Si
 				<span className={cn("font-mono truncate text-text-700", groupInteract)}>
 					{rule.pattern}
 				</span>
-				<span className={cn("text-[.75em] text-text-600", groupInteract)}>
-					Unload {formatTimeout(rule.timeoutMinutes).toLowerCase()}.
+				<span className={cn("truncate text-[.75em] text-text-600", groupInteract)}>
+					{description}
 				</span>
 			</button>
 			<button

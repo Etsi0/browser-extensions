@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** Firefox-only; keep prod ID in repo manifest — AMO / signed builds use that. */
-const GECKO_ID_DEV = 'sleepytabs-dev@phadonia.com';
+const GECKO_ID_DEV = 'sleepy-tabs--dev@phadonia.com';
 
 /** Copy manifest.json into dist, swapping in a dev name/ID for watch builds. */
 function copyManifestPlugin() {
@@ -29,7 +29,7 @@ function copyManifestPlugin() {
 			};
 
 			if (watchBuild) {
-				manifest.name = 'Sleepy Tabs (Dev)';
+				manifest.name += ' (Dev)';
 				manifest.browser_specific_settings ??= { gecko: {} };
 				manifest.browser_specific_settings.gecko ??= {};
 				manifest.browser_specific_settings.gecko.id = GECKO_ID_DEV;

@@ -89,6 +89,7 @@ export function ListView({ settings, onChange, onAdd, onEdit }: ListViewProps) {
 						<SiteRuleRow
 							key={rule.pattern}
 							rule={rule}
+							description={`Unload ${formatTimeout(rule.timeoutMinutes).toLowerCase()}.`}
 							index={index}
 							total={settings.siteRules.length}
 							onEdit={() => onEdit(index)}
