@@ -10,7 +10,7 @@ export { debounce } from './lib/debounce';
 export { durationToMinutes, formatTimeout, minutesToDuration, moveListItem } from './lib/settings';
 export { createStorage } from './lib/storage';
 export { tryCatch } from './lib/tryCatch';
-export { getRulePatternFeedback, isDiscardableUrl, normalizeRule, parseUrl, urlMatchesRule } from './lib/url';
+export { getRulePatternFeedback, isDiscardableUrl, isRegex, normalizeRule, parseUrl, urlMatchesRule } from './lib/url';
 
 export type { SelectOption, SelectProps } from './components/select';
 export type { RulePatternFeedback } from './lib/url';

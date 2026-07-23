@@ -20,10 +20,6 @@ const NON_DISCARDABLE_PROTOCOLS = new Set([
 	'view-source:',
 ]);
 
-function isRegex(str: string): boolean {
-	return str.length >= 2 && str.startsWith('/') && str.endsWith('/');
-}
-
 const ruleRegexCache = new Map<string, RegExp | undefined>();
 const ruleUrlCache = new Map<string, URL | undefined>();
 
@@ -42,9 +38,18 @@ function parseRuleUrl(rule: string): URL | undefined {
 		return ruleUrlCache.get(rule);
 	}
 
+	// Tab hostnames flow through here too, not just stored rules; keep it bounded.
+	if (ruleUrlCache.size > 500) {
+		ruleUrlCache.clear();
+	}
+
 	const url = parseUrl(`http://${rule}`);
 	ruleUrlCache.set(rule, url);
 	return url;
+}
+
+export function isRegex(str: string): boolean {
+	return str.length >= 2 && str.startsWith('/') && str.endsWith('/');
 }
 
 /**

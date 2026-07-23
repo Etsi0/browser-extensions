@@ -1,0 +1,28 @@
+{
+	"name": "forget-me",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite build --watch",
+		"dev:ui": "vite --open /dev.html",
+		"build": "vite build",
+		"typecheck": "tsc -b"
+	},
+	"dependencies": {
+		"clsx": "^2.1.1",
+		"extension-shared": "workspace:*",
+		"preact": "^10.29.1",
+		"tailwind-merge": "^3.6.0",
+		"webextension-polyfill": "^0.12.0"
+	},
+	"devDependencies": {
+		"@preact/preset-vite": "^2.10.5",
+		"@tailwindcss/vite": "^4.3.1",
+		"@types/node": "^24.12.3",
+		"@types/webextension-polyfill": "^0.12.3",
+		"tailwindcss": "^4.3.1",
+		"typescript": "~6.0.2",
+		"vite": "^8.0.12",
+		"vite-plugin-svgr": "^5.2.0"
+	}
+}

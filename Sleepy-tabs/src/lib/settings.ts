@@ -10,9 +10,9 @@ export function normalizeSettings(stored: unknown): Settings {
 		: DEFAULT_SETTINGS.timeoutMinutes;
 
 	return {
-		enabled: typeof raw.enabled === 'boolean' ? raw.enabled : DEFAULT_SETTINGS.enabled,
+		enabled:     typeof raw.enabled     === 'boolean' ? raw.enabled     : DEFAULT_SETTINGS.enabled,
 		timeoutMinutes,
-		skipPinned: typeof raw.skipPinned === 'boolean' ? raw.skipPinned : DEFAULT_SETTINGS.skipPinned,
+		skipPinned:  typeof raw.skipPinned  === 'boolean' ? raw.skipPinned  : DEFAULT_SETTINGS.skipPinned,
 		skipAudible: typeof raw.skipAudible === 'boolean' ? raw.skipAudible : DEFAULT_SETTINGS.skipAudible,
 		siteRules: normalizeSiteRules(raw.siteRules),
 	};
@@ -52,19 +52,18 @@ export function normalizeSiteRules(raw: unknown): SiteRule[] {
 
 export function settingsEqual(a: Settings, b: Settings): boolean {
 	if (
-		a.enabled !== b.enabled ||
-		a.timeoutMinutes !== b.timeoutMinutes ||
-		a.skipPinned !== b.skipPinned ||
-		a.skipAudible !== b.skipAudible ||
+		a.enabled          !== b.enabled          ||
+		a.timeoutMinutes   !== b.timeoutMinutes   ||
+		a.skipPinned       !== b.skipPinned       ||
+		a.skipAudible      !== b.skipAudible      ||
 		a.siteRules.length !== b.siteRules.length
 	) {
 		return false;
 	}
 
-	return a.siteRules.every(
-		(rule, index) =>
-			rule.pattern === b.siteRules[index].pattern &&
-			rule.timeoutMinutes === b.siteRules[index].timeoutMinutes,
+	return a.siteRules.every((rule, index) =>
+		rule.pattern        === b.siteRules[index].pattern        &&
+		rule.timeoutMinutes === b.siteRules[index].timeoutMinutes
 	);
 }
 
@@ -101,22 +100,17 @@ export function upsertSiteRule(settings: Settings, target: number | 'new', rule:
 	}
 
 	const newRule = normalized[0];
-	const siteRules = [...settings.siteRules];
-
-	if (target === 'new' || (typeof target === 'number' && (target < 0 || target >= siteRules.length))) {
-		if (findConflictingSiteRule(siteRules, target, newRule.pattern)) {
-			return settings;
-		}
-
-		siteRules.push(newRule);
-		return { ...settings, siteRules: normalizeSiteRules(siteRules) };
-	}
-
-	if (findConflictingSiteRule(siteRules, target, newRule.pattern)) {
+	if (findConflictingSiteRule(settings.siteRules, target, newRule.pattern)) {
 		return settings;
 	}
 
-	siteRules[target] = newRule;
+	const siteRules = [...settings.siteRules];
+	if (target !== 'new' && target >= 0 && target < siteRules.length) {
+		siteRules[target] = newRule;
+	} else {
+		siteRules.push(newRule);
+	}
+
 	return { ...settings, siteRules };
 }
 

@@ -1,0 +1,44 @@
+{
+	"manifest_version": 3,
+	"name": "Forget Me",
+	"version": "1.0.20260717",
+	"description": "Forget Me automatically removes history based on user-defined filters",
+	"permissions": [
+		"browsingData",
+		"downloads",
+		"history",
+		"storage",
+		"tabs"
+	],
+	"action": {
+		"default_popup": "./index.html",
+		"default_icon": {
+			"16": "./ForgetMe-16.png",
+			"32": "./ForgetMe-32.png",
+			"64": "./ForgetMe-64.png",
+			"128": "./ForgetMe-128.png",
+			"256": "./ForgetMe-256.png"
+		}
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "forget-me@phadonia.com",
+			"strict_min_version": "147.0",
+			"data_collection_permissions": {
+				"required": ["none"],
+				"optional": []
+			}
+		}
+	},
+	"background": {
+		"scripts": ["./src/background.js"],
+		"type": "module"
+	},
+	"icons": {
+		"16": "./ForgetMe-16.png",
+		"32": "./ForgetMe-32.png",
+		"64": "./ForgetMe-64.png",
+		"128": "./ForgetMe-128.png",
+		"256": "./ForgetMe-256.png"
+	}
+}
