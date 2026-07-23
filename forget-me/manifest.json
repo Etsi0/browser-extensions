@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Forget Me",
-	"version": "1.0.20260717",
+	"version": "1.0.20260723",
 	"description": "Forget Me automatically removes history based on user-defined filters",
 	"permissions": [
 		"browsingData",
