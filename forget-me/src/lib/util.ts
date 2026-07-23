@@ -14,6 +14,7 @@ export const DEFAULT_SITE_RULE: Readonly<SiteRule> = Object.freeze({
 } as const);
 
 export const STORAGE_KEY = 'settings' as const;
+export const LEGACY_STORAGE_KEYS = Object.freeze(['global', 'filters'] as const);
 
 export const REMOVAL_LABELS = Object.freeze({
 	removeCookies:      'cookies',
